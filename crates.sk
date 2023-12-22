@@ -1,0 +1,118 @@
+function get_item(p: player, check: number, name: text, Ie: item, stars: text):
+    send "&7[&b&LCRATES&7] &fYou have just received a %{_name}% &8| <##F3E0A9>T%{_check}% &8| <##B4DCA6>/storage" to {_p}
+    set {_hoe} to {_Ie} with all flags hidden
+    set {_arg} to {_check}
+    set {_real} to ({_arg}/{_arg})
+    set float tag "custom;money" of nbt of {_hoe} to {_check}
+    set float tag "custom;extraamount" of nbt of {_hoe} to 0
+    set int tag "custom;level" of nbt of {_hoe} to 0
+    set int tag "custom;curxp" of nbt of {_hoe} to 0
+    set int tag "custom;levelcap" of nbt of {_hoe} to 100
+    set {_a} to float tag "custom;extraamount" of nbt of {_hoe}
+    set {_b} to float tag "custom;money" of nbt of {_hoe}
+    set {_c} to int tag "custom;level" of nbt of {_hoe}
+    set {_d} to int tag "custom;levelcap" of nbt of {_hoe}
+    set {_e} to int tag "custom;curxp" of nbt of {_hoe}
+    set {_t} to {_check}
+    set {_check} to ({_a}+{_b})
+    set lore of {_hoe} to "&8Farming Tool%nl%&7%nl%<##f5d0a8>&l| &7Level: &f%{_c}%%nl%<##f5d0a8>&l| &7Tier: &f%{_t}%%nl%<##f5d0a8>&l| &7Damage: &fx%({_a}+{_b})%%nl%%nl%<##f5d0a8>&l| &7Current xp: %{_e}%&7/%{_d}%%nl%%nl%%{_stars}%"
+    give {_p} 1 of {_hoe} named "%{_name}% &8| <##F3E0A9>T%{_check}%"
+
+function get_reward(p: player, loc: location):
+    chance of 0.01%:
+        set {_check} to random integer between 12 and 15
+        spawn fake dropped item at {_loc} for {_p} with id 1 with diamond hoe
+        send metadata packet with entity id 1 name "&e★★★★★ &8| &6Hoe &8[&6T%{_check}%&8]", name visible true to {_p}
+        get_item({_p}, {_check}, "<##6DE3BE>Diamond Hoe", diamond hoe, "&e★★★★★")
+        stop
+    chance of 0.5%:
+        set {_check} to random integer between 9 and 11
+        spawn fake dropped item at {_loc} for {_p} with id 1 with Golden hoe
+        send metadata packet with entity id 1 name "&e★★★★&7★ &8| &5Hoe &8[&6T%{_check}%&8]", name visible true to {_p}
+        get_item({_p}, {_check}, "<##CCB460>Golden Hoe", golden hoe, "&e★★★★&7★")
+        stop
+    chance of 2.5%:
+        set {_check} to random integer between 6 and 8
+        spawn fake dropped item at {_loc} for {_p} with id 1 with iron hoe
+        send metadata packet with entity id 1 name "&e★★★&7★★ &8| &9Hoe &8[&6T%{_check}%&8]", name visible true to {_p}
+        get_item({_p}, {_check}, "<##9CBEB5>Iron Hoe", iron hoe, "&e★★★&7★★")
+        stop
+    chance of 5%:
+        set {_check} to random integer between 4 and 6
+        spawn fake dropped item at {_loc} for {_p} with id 1 with stone hoe
+        send metadata packet with entity id 1 name "&e★★&7★★★ &8| &aHoe &8[&6T%{_check}%&8]", name visible true to {_p}
+        get_item({_p}, {_check}, "<##A0AF9C>Stone Hoe", stone hoe, "&e★★&7★★★")
+        stop
+    chance of 100%:
+        set {_check} to random integer between 1 and 3
+        spawn fake dropped item at {_loc} for {_p} with id 1 with wooden hoe
+        send metadata packet with entity id 1 name "&e★&7★★★★ &8| &fHoe &8[&6T%{_check}%&8]", name visible true to {_p}
+        get_item({_p}, {_check}, "<##DCD0A6>Wooden Hoe", wooden hoe, "&e★&7★★★★")
+        stop
+
+on join:
+    set {_loc} to location at (551, 210, 396) in world "world"
+    add 0.3 to y-coord of {_loc}
+    spawn fake armor stand at {_loc} for player with id 5
+    wait 1 tick
+    send metadata packet with entity id 5 on fire false invisible true glowing false name "&8[&f&lFARMER'S BOX&8]" name visible true silent true pose "standing" to player
+    add 0.55 to y-coord of {_loc}
+    spawn fake armor stand at {_loc} for player with id 6
+    wait 1 tick
+    send metadata packet with entity id 6 on fire false invisible true glowing false name "&7Price: &2&a1,000" name visible true silent true pose "standing" to player
+
+
+on right click:
+    if event-block is chest:
+        if {money::%player's uuid%} >= 1000:
+            cancel event
+            remove fake entity with id 5 for player
+            remove 1000 from {money::%player's uuid%}
+            remove fake entity with id 6 for player
+            if {CHESTTIMER::%player%} is not set:
+                set {CHESTTIMER::%player%} to 0
+            if {CHESTTIMER::%player%} = 0:
+                add 1 to {CHESTTIMER::%player%}
+                set {_damage} to 0
+                loop 50 times:
+                    make player see damage of block at event-block as {_damage}
+                    draw 2 of item using oak wood at event-block with extra 0.1 for player
+                    add 0.035 to {_damage}
+                    wait 1 tick
+                    play sound "block.wood.hit" with volume 10 with pitch ({_damage}+0.1) at player for player
+                    set {_t} to 1
+                    set {_q} to 4
+                    set {_pitch} to 5
+                    set {_loc} to event-block
+                    loop 40 times:
+                        add 0.01 to y-coord of {_loc}
+                        set {_v} to spherical vector radius {_t}, yaw {_yaw}, pitch {_pitch}
+                        remove 0.01 from {_t}
+                        remove 0.01 from {_q}
+                        draw {_q} of dust using dustOption(red, 0.175) at {_loc} ~ {_v} for player
+                        set {_yaw} to 0 if {_yaw} > 360
+                        add {_q} to {_yaw}
+                        set {_pitch} to 0 if {_pitch} > 720
+                        add 0.01 to {_pitch}
+                    set {_loc} to event-block
+                set {_loc} to location of event-block
+                get_reward(player, {_loc})
+                fake multi block set (block at event-block) as air for player
+                wait 3 seconds
+                make player see damage of block at event-block as 0
+                remove fake entity with id 1 for player
+                set {CHESTTIMER::%player%} to 0
+                fake multi block set (block at event-block) as chest for player
+                set {_loc} to event-block
+                add -1.35 to y-coord of {_loc}
+                spawn fake armor stand at {_loc} for player with id 5
+                set {_loc} to event-block
+                wait 1 tick
+                send metadata packet with entity id 5 on fire false invisible true glowing false name "&8[&f&lFARMER'S BOX&8]" name visible true silent true pose "standing" to player
+                set {_loc} to event-block
+                add -1.75 to y-coord of {_loc}
+                spawn fake armor stand at {_loc} for player with id 6
+                wait 1 tick
+                send metadata packet with entity id 6 on fire false invisible true glowing false name "&7Price: &2$&a1,000" name visible true silent true pose "standing" to player
+            else:
+                send "&8[&cX&8] &7Sorry, you are currently opening a crate!" to player
